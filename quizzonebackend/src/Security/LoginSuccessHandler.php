@@ -18,7 +18,7 @@ class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
         return new JsonResponse([
             'message' => 'Login successful',
             'user' => [
-                'email' => $user->getUsername(),  // lub inne informacje o użytkowniku
+                'email' => $user->getUsername(),
                 'roles' => $user->getRoles(),
             ]
         ], 200);
