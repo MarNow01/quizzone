@@ -4,7 +4,11 @@ framework:
     #csrf_protection: true
 
     # Note that the session will be started ONLY if you read or write from it.
-    session: true
+    session:
+        handler_id: null # Użycie domyślnego handlera sesji
+        cookie_secure: auto # Ustaw cookie jako secure, jeśli używasz HTTPS
+        cookie_samesite: lax # Ustawienia SameSite, np. 'lax' lub 'strict'
+        name: MYSESSIONID # Nazwa pliku cookie sesji
 
     #esi: true
     #fragments: true

@@ -17,8 +17,9 @@ class UserController extends AbstractController
             'message' => 'Hello World',
         ]);
     }
-    #[Route('/user', name: 'app_user', methods: ['GET'])]
-    //#[IsGranted('IS_AUTHENTICATED_FULLY')] // Tylko dla zalogowanych użytkowników
+
+    #[Route('/api/user', name: 'app_user', methods: ['GET'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')] // Tylko dla zalogowanych użytkowników
     public function user(): JsonResponse
     {
         // Uzyskiwanie aktualnie zalogowanego użytkownika
@@ -31,5 +32,12 @@ class UserController extends AbstractController
 
         // Zwróć dane użytkownika w formacie JSON
         return new JsonResponse(['username' => $user->getUsername()]);
+    }
+
+    #[Route('/api/quizes', name: 'app_quizes')]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function quizes(): JsonResponse
+    {
+        return new JsonResponse(['quiz' => ["test abc", "prawko360"]]);
     }
 }

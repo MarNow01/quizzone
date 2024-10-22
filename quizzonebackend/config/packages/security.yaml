@@ -17,11 +17,6 @@ security:
             security: false
             
         main:
-            lazy: true
-            provider: app_user_provider
-            custom_authenticator: App\Security\AppCustomAuthentificatorAuthenticator
-            
-        api:
             pattern: ^/api
             stateless: false
             form_login:
@@ -33,11 +28,15 @@ security:
             logout:
                 path: /api/logout
                 invalidate_session: true
+            lazy: true
+            provider: app_user_provider
+            custom_authenticator: App\Security\AppCustomAuthentificatorAuthenticator
+            
 
     access_control:
-        #- { path: ^/api/login}
-        #- { path: ^/api/register}
-        #- { path: ^/user, roles: ROLE_USER }
+        - { path: ^/api/login}
+        - { path: ^/api/register}
+        - { path: ^/user, roles: ROLE_USER }
 
 when@test:
     security:

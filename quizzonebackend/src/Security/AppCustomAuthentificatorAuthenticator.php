@@ -2,6 +2,7 @@
 namespace App\Security;
 
 use App\Entity\User; // Upewnij się, że masz odpowiedni import dla klasy User
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -24,7 +25,7 @@ class AppCustomAuthentificatorAuthenticator extends AbstractAuthenticator
 
     public function supports(Request $request): ?bool
     {
-        return $request->attributes->get('_route') === 'api_login';
+        return in_array($request->attributes->get('_route'), ['api_login', 'app_user']);
     }
 
     public function authenticate(Request $request): Passport
@@ -59,10 +60,12 @@ class AppCustomAuthentificatorAuthenticator extends AbstractAuthenticator
         );
     }
 
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?JsonResponse
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
         /** @var UserInterface $user */
         $user = $token->getUser();
+
+        $request->getSession()->set('_security_' . $firewallName, serialize($token));
 
         return new JsonResponse([
             'message' => 'Login successful',
