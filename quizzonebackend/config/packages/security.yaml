@@ -15,23 +15,26 @@ security:
 
     firewalls:
         login:
-            pattern: ^/api
+            pattern: ^/api/login
             stateless: true
             json_login:
                 check_path: /api/login
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
+                
         # Ustawienia dla api
         api:
             pattern: ^/api
             stateless: true
+            provider: app_user_provider
             jwt: ~ # Użyj JWT do autoryzacji
             
 
     access_control:
-        # - { path: ^/api/login}
-        # - { path: ^/api/register}
-        # - { path: ^/user, roles: ROLE_USER }
+        - { path: ^/api/login}
+        - { path: ^/api/register}
+        # - { path: ^/api/user, roles: ROLE_USER }
+        - { path: ^/api/quizes, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:
