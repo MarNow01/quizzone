@@ -10,7 +10,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class UserController extends AbstractController
 {
-    #[Route('/', name: 'app_course')]
+    #[Route('/', name: 'api')]
     public function hello(): Response
     {
         return $this->render('user/hello.html.twig', [
@@ -18,8 +18,7 @@ class UserController extends AbstractController
         ]);
     }
 
-    #[Route('/api/user', name: 'app_user', methods: ['GET'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')] // Tylko dla zalogowanych użytkowników
+    #[Route('/api/user', name: 'api_user', methods: ['GET'])]
     public function user(): JsonResponse
     {
         // Uzyskiwanie aktualnie zalogowanego użytkownika
@@ -34,8 +33,7 @@ class UserController extends AbstractController
         return new JsonResponse(['username' => $user->getUsername()]);
     }
 
-    #[Route('/api/quizes', name: 'app_quizes')]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[Route('/api/quizes', name: 'api_quizes', methods: ['GET'])]
     public function quizes(): JsonResponse
     {
         return new JsonResponse(['quiz' => ["test abc", "prawko360"]]);

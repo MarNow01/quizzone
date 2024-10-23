@@ -2,62 +2,44 @@
 
 namespace App\Controller;
 
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Entity\User;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Security\Core\User\UserProviderInterface;
+use InvalidArgumentException;
 
-class ApiLoginController
+class ApiLoginController extends AbstractController
 {
-    private $authUtils;
-    private $validator;
-
-    public function __construct(AuthenticationUtils $authUtils, ValidatorInterface $validator, SessionInterface $session)
+    private $userProvider;
+    private $jwtManager;
+    
+    public function __construct(UserProviderInterface $userProvider, JWTTokenManagerInterface $jwtManager)
     {
-        $this->authUtils = $authUtils;
-        $this->validator = $validator;
-        $this->session = $session;
+        $this->userProvider = $userProvider;
+        $this->jwtManager = $jwtManager;
     }
-
 
     #[Route('/api/login', name: 'api_login', methods: ['POST'])]
     public function login(Request $request): JsonResponse
     {
-        // Odczytaj dane z żądania
         $data = json_decode($request->getContent(), true);
-        $username = $data['username'] ?? '';
-        $password = $data['password'] ?? '';
 
-        // Sprawdź, czy dane zostały podane
-        if (empty($username) || empty($password)) {
-            return new JsonResponse(['error' => 'Username and password are required.'], 400);
+        if (!isset($data['username']) || !isset($data['password'])) {
+            throw new InvalidArgumentException('Missing credentials');
         }
 
-        try {
-            // Wykorzystaj custom authenticator do autoryzacji użytkownika
-            $passport = new Passport(
-                new UserBadge($username),
-                new PasswordCredentials($password)
-            );
+        $user = $this->userProvider->loadUserByUsername($data['username']);
 
-            // Uwierzytelnij użytkownika i zapisz token w sesji
-            $this->tokenStorage->setToken($passport);
-
-            return new JsonResponse(['username' => $username, 'message' => 'Logged in successfully']);
-        } catch (AuthenticationException $e) {
-            return new JsonResponse(['error' => $e->getMessage()], 403);
+        if (!$user || !password_verify($data['password'], $user->getPassword())) {
+            throw new InvalidArgumentException('Invalid credentials');
         }
-    }
 
-    #[Route('/api/logout', name: 'api_logout', methods: ['POST'])]
-    public function logout(): JsonResponse
-    {
-        // Usuń dane użytkownika z sesji
-        $this->session->remove('user_id');
+        $token = $this->jwtManager->create($user);
 
-        return new JsonResponse(['message' => 'Logged out successfully']);
+        return new JsonResponse(['token' => $token]);
     }
 }

@@ -12,7 +12,6 @@ class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
 {
     public function onAuthenticationSuccess(Request $request, TokenInterface $token): JsonResponse
     {
-        $session = $request->getSession();
         /** @var UserInterface $user */
         $user = $token->getUser();
 
