@@ -32,10 +32,4 @@ class UserController extends AbstractController
         // Zwróć dane użytkownika w formacie JSON
         return new JsonResponse(['username' => $user->getUsername()]);
     }
-
-    #[Route('/api/quizes', name: 'api_quizes', methods: ['GET'])]
-    public function quizes(): JsonResponse
-    {
-        return new JsonResponse(['quiz' => ["test abc", "prawko360"]]);
-    }
 }
