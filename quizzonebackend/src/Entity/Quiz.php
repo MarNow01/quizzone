@@ -32,6 +32,9 @@ class Quiz
     #[ORM\OneToMany(targetEntity: Question::class, mappedBy: 'quiz', orphanRemoval: true)]
     private Collection $questions;
 
+    #[ORM\ManyToOne(inversedBy: 'quizzes')]
+    private ?Category $category = null;
+
     public function __construct()
     {
         $this->questions = new ArrayCollection();
@@ -104,6 +107,18 @@ class Quiz
                 $question->setQuiz(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCategory(): ?Category
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?Category $category): static
+    {
+        $this->category = $category;
 
         return $this;
     }

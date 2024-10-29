@@ -22,9 +22,12 @@ class QuizController extends AbstractController
         
         $data = [];
         foreach ($quizzes as $quiz) {
+            $category = null;
+            if($quiz->getCategory())$category = $quiz->getCategory()->getName();
             $data[] = [
                 'id' => $quiz->getId(),
                 'name' => $quiz->getName(),
+                'category' => $category,
                 'created' => $quiz->getDateOfCreation(),
             ];
         }
@@ -130,6 +133,9 @@ class QuizController extends AbstractController
             return new JsonResponse(['error' => 'Quiz not found.'], JsonResponse::HTTP_NOT_FOUND);
         }
 
+        $category = null;
+        if($quiz->getCategory())$category = $quiz->getCategory()->getName();
+
         $questions = [];
         foreach ($quiz->getQuestions() as $question) {
             $questions[] = [
@@ -148,6 +154,7 @@ class QuizController extends AbstractController
                 'id' => $quiz->getId(),
                 'name' => $quiz->getName(),
                 'author' => $quiz->getAuthor()->getUsername(),
+                'category' => $category,
                 'questions' => $questions,
             ]
         ]);
