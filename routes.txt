@@ -1,52 +1,86 @@
 api-user:
-    [GET]/api/user
+    [GET]
+    /api/user
     zwraca informacje o zalogowanym użytkowniku
     format: ['username']
 
-    [POST]/api/register
+    [POST]
+    /api/register
     tworzy nowego użytkownika
     format: ['username','password']
 
-    [POST]/api/login
+    [POST]
+    /api/login
     loguje użytkownika/zwraca token
     format: ['username','password']
     zwraca: ['token']
 
 
 api-quiz:
-    [GET]/api/quizes
+    [GET]
+    /api/quizes
     zwraca listę quizów
     zwraca [['id', 'name','category', 'created']]
 
-    [GET]/api/quiz/{id}
+    [GET]
+    /api/quiz/{id}
     zwraca konkretny quiz
     {id} - id quizu
     zwraca ['id','name', 'author', 'questions'['content','answerA','answerB','answerC','answerD','correctAnswer']]
     
-
-    [DELETE]/api/quiz/{id}
+    [DELETE]
+    /api/quiz/{id}
     {id} - id quizu
     usuwa quiz
 
-
-    [POST]/api/quiz/new
+    [POST]
+    /api/quiz/new
     tworzy nowy quiz
     format: ['name']
 
-    [POST]/api/quiz/{id}/add-question
+    [POST]
+    /api/quiz/{id}/add-question
     dodaje nowe pytanie do istniejącego quizu
     {id} - id quizu
     format: ['content','answerA','answerB','answerC','answerD','correctAnswer']
 
-    [PUT]/api/quiz/{id}
+    [PUT]
+    /api/quiz/{id}
     edytuje właściwości quizu
     {id} - id quizu
     format: ['name']
 
-    [PUT]/api/quiz/{quizId}/questions/{questionId}
+    [PUT]
+    /api/quiz/{quizId}/questions/{questionId}
     edytuje właściwości pytania
     {quizId} - id quizu
     {questionId} - id pytania
     format: ['content','answerA','answerB','answerC','answerD','correctAnswer']
 
+api-category:
+    [GET]
+    /api/categories
+    zwraca listę kategorii
+    zwraca ['id', 'name']
 
+    [GET]
+    /api/category/{id}
+    {id} - id kategorii
+    zwraca listę quizów danej kategorii
+    zwraca ['id', 'name','quizes'['id', 'name','category', 'created']]
+
+    [DELETE]
+    /api/category/{id}
+    {id} - id kategorii
+    usuwa kategorię
+
+    [POST]
+    /api/category/new
+    tworzy nową kategorię
+    format: ['name']
+
+    [PUT]
+    /api/category/{id}
+    edytuje właściwości kategorii
+    {id} - id kategorii
+    format: ['name']

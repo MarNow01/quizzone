@@ -35,6 +35,41 @@ class QuizController extends AbstractController
         return new JsonResponse(['quizes' => $data], Response::HTTP_OK);
     }
 
+    #[Route('/api/quiz/{id}', name: 'api_quiz_show', methods: ['GET'])]
+    public function show(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $quiz = $entityManager->getRepository(Quiz::class)->find($id);
+        if (!$quiz) {
+            return new JsonResponse(['error' => 'Quiz not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        $category = null;
+        if($quiz->getCategory())$category = $quiz->getCategory()->getName();
+
+        $questions = [];
+        foreach ($quiz->getQuestions() as $question) {
+            $questions[] = [
+                'id' => $question->getId(),
+                'content' => $question->getContent(),
+                'answerA' => $question->getAnswerA(),
+                'answerB' => $question->getAnswerB(),
+                'answerC' => $question->getAnswerC(),
+                'answerD' => $question->getAnswerD(),
+                'correctAnswer' => $question->getCorrectAnswer(),
+            ];
+        }
+
+        return new JsonResponse([
+            'quiz' => [
+                'id' => $quiz->getId(),
+                'name' => $quiz->getName(),
+                'author' => $quiz->getAuthor()->getUsername(),
+                'category' => $category,
+                'questions' => $questions,
+            ]
+        ]);
+    }
+
     #[Route('/api/quiz/{id}', name: 'api_quiz_delete', methods: ['DELETE'])]
     public function deleteQuiz(int $id, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -50,8 +85,7 @@ class QuizController extends AbstractController
         return new JsonResponse(['message' => 'Quiz deleted successfully.'], JsonResponse::HTTP_OK);
     }
 
-
-    #[Route('/api/quiz/new', name: 'quiz_new', methods: ['POST'])]
+    #[Route('/api/quiz/new', name: 'api_quiz_new', methods: ['POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         $user = $this->getUser();
@@ -84,7 +118,7 @@ class QuizController extends AbstractController
         ], JsonResponse::HTTP_CREATED);
     }
 
-    #[Route('/api/quiz/{id}/add-question', name: 'add_question', methods: ['POST'])]
+    #[Route('/api/quiz/{id}/add-question', name: 'api_add_question', methods: ['POST'])]
     public function addQuestion(Request $request, EntityManagerInterface $entityManager, int $id): JsonResponse
     {
         $user = $this->getUser();
@@ -123,41 +157,6 @@ class QuizController extends AbstractController
                 'content' => $question->getContent(),
             ]
         ], JsonResponse::HTTP_CREATED);
-    }
-
-    #[Route('/api/quiz/{id}', name: 'quiz_show', methods: ['GET'])]
-    public function show(int $id, EntityManagerInterface $entityManager): JsonResponse
-    {
-        $quiz = $entityManager->getRepository(Quiz::class)->find($id);
-        if (!$quiz) {
-            return new JsonResponse(['error' => 'Quiz not found.'], JsonResponse::HTTP_NOT_FOUND);
-        }
-
-        $category = null;
-        if($quiz->getCategory())$category = $quiz->getCategory()->getName();
-
-        $questions = [];
-        foreach ($quiz->getQuestions() as $question) {
-            $questions[] = [
-                'id' => $question->getId(),
-                'content' => $question->getContent(),
-                'answerA' => $question->getAnswerA(),
-                'answerB' => $question->getAnswerB(),
-                'answerC' => $question->getAnswerC(),
-                'answerD' => $question->getAnswerD(),
-                'correctAnswer' => $question->getCorrectAnswer(),
-            ];
-        }
-
-        return new JsonResponse([
-            'quiz' => [
-                'id' => $quiz->getId(),
-                'name' => $quiz->getName(),
-                'author' => $quiz->getAuthor()->getUsername(),
-                'category' => $category,
-                'questions' => $questions,
-            ]
-        ]);
     }
 
     #[Route('/api/quiz/{id}', name: 'api_quiz_update', methods: ['PUT'])]
