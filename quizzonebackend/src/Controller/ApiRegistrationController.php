@@ -24,7 +24,7 @@ class ApiRegistrationController extends AbstractController
             $logger->warning('Registration attempt with missing username or password', [
                 'data' => $data
             ]);
-            return new JsonResponse(['message' => 'Username and password are required'], 400);
+            return new JsonResponse(['message' => 'Nazwa użytkowika i hasło są wymagane'], 400);
         }
 
         // Sprawdzenie, czy użytkownik już istnieje
@@ -33,7 +33,7 @@ class ApiRegistrationController extends AbstractController
             $logger->warning('Registration attempt with existing username', [
                 'username' => $data['username']
             ]);
-            return new JsonResponse(['message' => 'Username already exists'], 409); // Conflict
+            return new JsonResponse(['message' => 'Użytkownik '.$data['username'].' już istnieje'], 409); // Conflict
         }
 
         // Tworzenie nowego użytkownika
@@ -65,9 +65,9 @@ class ApiRegistrationController extends AbstractController
             $logger->error('Error occurred while registering user', [
                 'exception' => $e->getMessage()
             ]);
-            return new JsonResponse(['message' => 'An error occurred while registering the user.'], 500); // Internal server error
+            return new JsonResponse(['message' => 'Wystąpił błąd podczas tworzenia użytkownika.'], 500); // Internal server error
         }
 
-        return new JsonResponse(['message' => 'User registered successfully'], 201);
+        return new JsonResponse(['message' => 'Rejsestraca zakończona sukcesem'], 201);
     }
 }

@@ -2,7 +2,7 @@ api-user:
     [GET]
     /api/user
     zwraca informacje o zalogowanym użytkowniku
-    format: ['username']
+    zwraca: ['user':['username','profilePicture']]
 
     [POST]
     /api/register
@@ -15,18 +15,23 @@ api-user:
     format: ['username','password']
     zwraca: ['token']
 
+    [PUT]
+    /api/user/profile-picture
+    ustawia właściwość ProfilePicture użytkownika
+    format: ['profilePicture'] //wartosc od 1 do 6
+
 
 api-quiz:
     [GET]
     /api/quizes
     zwraca listę quizów
-    zwraca [['id', 'name','category', 'created']]
+    zwraca: ['quizes'['id', 'name','category', 'created']]
 
     [GET]
     /api/quiz/{id}
     zwraca konkretny quiz
     {id} - id quizu
-    zwraca ['id','name', 'author', 'questions'['content','answerA','answerB','answerC','answerD','correctAnswer']]
+    zwraca: ['quiz'['id','name', 'author', 'questions'['content','answerA','answerB','answerC','answerD','correctAnswer']]]
     
     [DELETE]
     /api/quiz/{id}
@@ -61,13 +66,13 @@ api-category:
     [GET]
     /api/categories
     zwraca listę kategorii
-    zwraca ['id', 'name']
+    zwraca: ['categories'['id', 'name']]
 
     [GET]
     /api/category/{id}
     {id} - id kategorii
     zwraca listę quizów danej kategorii
-    zwraca ['id', 'name','quizes'['id', 'name','category', 'created']]
+    zwraca: ['category':['id', 'name','quizes'['id', 'name','category', 'created']]]
 
     [DELETE]
     /api/category/{id}

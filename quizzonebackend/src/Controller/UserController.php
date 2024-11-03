@@ -21,15 +21,40 @@ class UserController extends AbstractController
     #[Route('/api/user', name: 'api_user', methods: ['GET'])]
     public function user(): JsonResponse
     {
-        // Uzyskiwanie aktualnie zalogowanego użytkownika
         $user = $this->getUser();
 
-        // Jeśli użytkownik nie jest zalogowany, zwróć błąd
         if (!$user) {
-            return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['error' => 'Użytkownik niezalogowany'], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Zwróć dane użytkownika w formacie JSON
-        return new JsonResponse(['username' => $user->getUsername()]);
+        return new JsonResponse(['user' => [
+            'username' => $user->getUsername(),
+            'profilePicture' => $user->getProfilePicture()]
+        ]);
+    }
+
+    #[Route('/api/user/profile-picture', name: 'api_user_profile_picture', methods: ['PUT'])]
+    public function editProfilePicture(Request $request): JsonResponse
+    {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Użytkownik niezalogowany'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $profilePicture = $data['profilePicture'] ?? null;
+
+        if ($profilePicture < 1 || $profilePicture > 6) {
+            return new JsonResponse(['error' => 'Wartość profilePicture musi być od 1 do 6'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $user->setProfilePicture($profilePicture);
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return new JsonResponse(['success' => 'Zdjęcie profilowe zostało zaktualizowane'], Response::HTTP_OK);
     }
 }

@@ -40,6 +40,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Quiz::class, mappedBy: 'author', orphanRemoval: true)]
     private Collection $quizzes;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $ProfilePicture = null;
+
     public function __construct()
     {
         $this->quizzes = new ArrayCollection();
@@ -146,6 +149,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $quiz->setAuthor(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getProfilePicture(): ?int
+    {
+        return $this->ProfilePicture;
+    }
+
+    public function setProfilePicture(?int $ProfilePicture): static
+    {
+        $this->ProfilePicture = $ProfilePicture;
 
         return $this;
     }

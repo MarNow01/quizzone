@@ -29,13 +29,13 @@ class ApiLoginController extends AbstractController
         $data = json_decode($request->getContent(), true);
 
         if (!isset($data['username']) || !isset($data['password'])) {
-            throw new InvalidArgumentException('Missing credentials');
+            throw new InvalidArgumentException('Zgubiona dane logowania');
         }
 
         $user = $this->userProvider->loadUserByUsername($data['username']);
 
         if (!$user || !password_verify($data['password'], $user->getPassword())) {
-            throw new InvalidArgumentException('Invalid credentials');
+            throw new InvalidArgumentException('Niepoprawne dane logowania');
         }
 
         $token = $this->jwtManager->create($user);

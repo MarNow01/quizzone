@@ -40,7 +40,7 @@ class QuizController extends AbstractController
     {
         $quiz = $entityManager->getRepository(Quiz::class)->find($id);
         if (!$quiz) {
-            return new JsonResponse(['error' => 'Quiz not found.'], JsonResponse::HTTP_NOT_FOUND);
+            return new JsonResponse(['error' => 'Nie znaleziono quizu.'], JsonResponse::HTTP_NOT_FOUND);
         }
 
         $category = null;
@@ -76,13 +76,13 @@ class QuizController extends AbstractController
         $quiz = $entityManager->getRepository(Quiz::class)->find($id);
 
         if (!$quiz) {
-            return new JsonResponse(['error' => 'Quiz not found.'], JsonResponse::HTTP_NOT_FOUND);
+            return new JsonResponse(['error' => 'Nie znaleziono quizu.'], JsonResponse::HTTP_NOT_FOUND);
         }
 
         $entityManager->remove($quiz);
         $entityManager->flush();
 
-        return new JsonResponse(['message' => 'Quiz deleted successfully.'], JsonResponse::HTTP_OK);
+        return new JsonResponse(['message' => 'Quiz usunięty pomyślnie.'], JsonResponse::HTTP_OK);
     }
 
     #[Route('/api/quiz/new', name: 'api_quiz_new', methods: ['POST'])]
@@ -90,13 +90,13 @@ class QuizController extends AbstractController
     {
         $user = $this->getUser();
         if (!$user) {
-            return new JsonResponse(['error' => 'User must be logged in to create a quiz.'], JsonResponse::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['error' => 'Użytkownik musi być zalogowany, by utworzyć quiz.'], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
         $data = json_decode($request->getContent(), true);
 
         if (empty($data['name'])) {
-            return new JsonResponse(['error' => 'Quiz name is required.'], JsonResponse::HTTP_BAD_REQUEST);
+            return new JsonResponse(['error' => 'Nazwa quizu jest wymagana.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $quiz = new Quiz();
@@ -123,19 +123,19 @@ class QuizController extends AbstractController
     {
         $user = $this->getUser();
         if (!$user) {
-            return new JsonResponse(['error' => 'User must be logged in to add a question.'], JsonResponse::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['error' => 'Użytkownik musi być zalogowany, by dodać pytanie.'], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
         // Wyszukiwanie quizu po ID
         $quiz = $entityManager->getRepository(Quiz::class)->find($id);
         if (!$quiz) {
-            return new JsonResponse(['error' => 'Quiz not found.'], JsonResponse::HTTP_NOT_FOUND);
+            return new JsonResponse(['error' => 'Nie znaleziono quozu.'], JsonResponse::HTTP_NOT_FOUND);
         }
 
         $data = json_decode($request->getContent(), true);
 
         if (empty($data['content']) || empty($data['answerA']) || empty($data['answerB']) || empty($data['correctAnswer'])) {
-            return new JsonResponse(['error' => 'All fields are required.'], JsonResponse::HTTP_BAD_REQUEST);
+            return new JsonResponse(['error' => 'Nie podano wszystkich wymaganych pól.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $question = new Question();
@@ -151,7 +151,7 @@ class QuizController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse([
-            'message' => 'Question added successfully.',
+            'message' => 'Pytanie dodane pomyślnie.',
             'question' => [
                 'id' => $question->getId(),
                 'content' => $question->getContent(),
@@ -165,21 +165,21 @@ class QuizController extends AbstractController
         $quiz = $entityManager->getRepository(Quiz::class)->find($id);
 
         if (!$quiz) {
-            return new JsonResponse(['error' => 'Quiz not found.'], JsonResponse::HTTP_NOT_FOUND);
+            return new JsonResponse(['error' => 'Nie znaleziono quizu.'], JsonResponse::HTTP_NOT_FOUND);
         }
 
         $data = json_decode($request->getContent(), true);
 
         if (empty($data['name'])) {
-            return new JsonResponse(['error' => 'Quiz name is required.'], JsonResponse::HTTP_BAD_REQUEST);
+            return new JsonResponse(['error' => 'Nazwa quizu jest wymagana.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $quiz->setName($data['name']);
-        $quiz->setDateOfCreation(new \DateTime()); // Ustaw bieżącą datę
+        $quiz->setDateOfCreation(new \DateTime());
 
         $entityManager->flush();
 
-        return new JsonResponse(['message' => 'Quiz updated successfully.'], JsonResponse::HTTP_OK);
+        return new JsonResponse(['message' => 'Quiz zmodyfikowany pomyślnie.'], JsonResponse::HTTP_OK);
     }
 
     #[Route('/api/quiz/{quizId}/questions/{questionId}', name: 'api_question_update', methods: ['PUT'])]
@@ -188,13 +188,13 @@ class QuizController extends AbstractController
         $question = $entityManager->getRepository(Question::class)->find($questionId);
 
         if (!$question || $question->getQuiz()->getId() !== $quizId) {
-            return new JsonResponse(['error' => 'Question not found.'], JsonResponse::HTTP_NOT_FOUND);
+            return new JsonResponse(['error' => 'Nie znaleziono pytania.'], JsonResponse::HTTP_NOT_FOUND);
         }
 
         $data = json_decode($request->getContent(), true);
 
         if (empty($data['content'])) {
-            return new JsonResponse(['error' => 'Question content is required.'], JsonResponse::HTTP_BAD_REQUEST);
+            return new JsonResponse(['error' => 'Treść pytania jest wymagana.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $question->setContent($data['content']);
@@ -206,7 +206,7 @@ class QuizController extends AbstractController
 
         $entityManager->flush();
 
-        return new JsonResponse(['message' => 'Question updated successfully.'], JsonResponse::HTTP_OK);
+        return new JsonResponse(['message' => 'Pytanie zmodyfiokowane pomyślnie.'], JsonResponse::HTTP_OK);
     }
 
 }

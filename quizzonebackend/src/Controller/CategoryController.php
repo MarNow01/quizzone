@@ -34,7 +34,7 @@ class CategoryController extends AbstractController
     {
         $category = $entityManager->getRepository(Category::class)->find($id);
         if (!$category) {
-            return new JsonResponse(['error' => 'Category not found.'], JsonResponse::HTTP_NOT_FOUND);
+            return new JsonResponse(['error' => 'Nie znaleziono kategorii'], JsonResponse::HTTP_NOT_FOUND);
         }
 
 
@@ -63,13 +63,13 @@ class CategoryController extends AbstractController
         //Dodać autoryzacje admina
         $user = $this->getUser();
         if (!$user) {
-            return new JsonResponse(['error' => 'User must be logged in to create a category'], JsonResponse::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['error' => 'Użytkownik musi być zalogowany, by utworzyć kategorię.'], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
         $data = json_decode($request->getContent(), true);
 
         if (empty($data['name'])) {
-            return new JsonResponse(['error' => 'Category name is required.'], JsonResponse::HTTP_BAD_REQUEST);
+            return new JsonResponse(['error' => 'Nazwa kategorii jest wymagana.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $category = new Category();
@@ -79,7 +79,7 @@ class CategoryController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse([
-            'message' => 'Category created successfully.',
+            'message' => 'Kategoria utworzona pomyślnie.',
             'category' => [
                 'id' => $category->getId(),
                 'name' => $category->getName(),
@@ -93,19 +93,19 @@ class CategoryController extends AbstractController
         //Dodać autoryzacje admina
         $user = $this->getUser();
         if (!$user) {
-            return new JsonResponse(['error' => 'User must be logged in to delete a category'], JsonResponse::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['error' => 'Użytkownik musi być zalogowany, by usunąć kategorię.'], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
         $category = $entityManager->getRepository(Category::class)->find($id);
 
         if (!$category) {
-            return new JsonResponse(['error' => 'Category not found.'], JsonResponse::HTTP_NOT_FOUND);
+            return new JsonResponse(['error' => 'Nie znaleziono kategorii.'], JsonResponse::HTTP_NOT_FOUND);
         }
 
         $entityManager->remove($category);
         $entityManager->flush();
 
-        return new JsonResponse(['message' => 'Category deleted successfully.'], JsonResponse::HTTP_OK);
+        return new JsonResponse(['message' => 'Kategoria usunięta poprawnie.'], JsonResponse::HTTP_OK);
     }
 
     #[Route('/api/category/{id}', name: 'api_category_update', methods: ['PUT'])]
@@ -114,19 +114,19 @@ class CategoryController extends AbstractController
         $category = $entityManager->getRepository(Category::class)->find($id);
 
         if (!$category) {
-            return new JsonResponse(['error' => 'Category not found.'], JsonResponse::HTTP_NOT_FOUND);
+            return new JsonResponse(['error' => 'Kategoria nie znaleziona.'], JsonResponse::HTTP_NOT_FOUND);
         }
 
         $data = json_decode($request->getContent(), true);
 
         if (empty($data['name'])) {
-            return new JsonResponse(['error' => 'Category name is required.'], JsonResponse::HTTP_BAD_REQUEST);
+            return new JsonResponse(['error' => 'Nazwa kategorii jest wymagana.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $category->setName($data['name']);
 
         $entityManager->flush();
 
-        return new JsonResponse(['message' => 'Category updated successfully.'], JsonResponse::HTTP_OK);
+        return new JsonResponse(['message' => 'Kategoria zmodyfikowana pomyślnie.'], JsonResponse::HTTP_OK);
     }
 }
