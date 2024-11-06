@@ -35,9 +35,16 @@ class Quiz
     #[ORM\ManyToOne(inversedBy: 'quizzes')]
     private ?Category $category = null;
 
+    /**
+     * @var Collection<int, AttemptQuiz>
+     */
+    #[ORM\OneToMany(targetEntity: AttemptQuiz::class, mappedBy: 'Quiz', orphanRemoval: true)]
+    private Collection $attemptQuizzes;
+
     public function __construct()
     {
         $this->questions = new ArrayCollection();
+        $this->attemptQuizzes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -119,6 +126,36 @@ class Quiz
     public function setCategory(?Category $category): static
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, AttemptQuiz>
+     */
+    public function getAttemptQuizzes(): Collection
+    {
+        return $this->attemptQuizzes;
+    }
+
+    public function addAttemptQuiz(AttemptQuiz $attemptQuiz): static
+    {
+        if (!$this->attemptQuizzes->contains($attemptQuiz)) {
+            $this->attemptQuizzes->add($attemptQuiz);
+            $attemptQuiz->setQuiz($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAttemptQuiz(AttemptQuiz $attemptQuiz): static
+    {
+        if ($this->attemptQuizzes->removeElement($attemptQuiz)) {
+            // set the owning side to null (unless already changed)
+            if ($attemptQuiz->getQuiz() === $this) {
+                $attemptQuiz->setQuiz(null);
+            }
+        }
 
         return $this;
     }

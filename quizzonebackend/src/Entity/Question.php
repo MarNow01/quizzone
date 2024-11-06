@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\QuestionRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: QuestionRepository::class)]
@@ -37,6 +39,17 @@ class Question
     #[ORM\ManyToOne(inversedBy: 'questions')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Quiz $quiz = null;
+
+    /**
+     * @var Collection<int, AttemptQuestion>
+     */
+    #[ORM\OneToMany(targetEntity: AttemptQuestion::class, mappedBy: 'Question', orphanRemoval: true)]
+    private Collection $attemptQuestions;
+
+    public function __construct()
+    {
+        $this->attemptQuestions = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -135,6 +148,36 @@ class Question
     public function setQuiz(?Quiz $quiz): static
     {
         $this->quiz = $quiz;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, AttemptQuestion>
+     */
+    public function getAttemptQuestions(): Collection
+    {
+        return $this->attemptQuestions;
+    }
+
+    public function addAttemptQuestion(AttemptQuestion $attemptQuestion): static
+    {
+        if (!$this->attemptQuestions->contains($attemptQuestion)) {
+            $this->attemptQuestions->add($attemptQuestion);
+            $attemptQuestion->setQuestion($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAttemptQuestion(AttemptQuestion $attemptQuestion): static
+    {
+        if ($this->attemptQuestions->removeElement($attemptQuestion)) {
+            // set the owning side to null (unless already changed)
+            if ($attemptQuestion->getQuestion() === $this) {
+                $attemptQuestion->setQuestion(null);
+            }
+        }
 
         return $this;
     }

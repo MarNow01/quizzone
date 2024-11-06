@@ -34,6 +34,31 @@ class QuizController extends AbstractController
 
         return new JsonResponse(['quizes' => $data], Response::HTTP_OK);
     }
+   
+    
+    #[Route('/api/userquizes', name: 'api_user_quizes', methods: ['GET'])]
+    public function userquizzes(QuizRepository $quizRepository): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Użytkownik musi być zalogowany, by zobaczyć swoje quizy.'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+        $quizzes = $quizRepository->findBy(['author' => $user]);
+        
+        $data = [];
+        foreach ($quizzes as $quiz) {
+            $category = null;
+            if($quiz->getCategory())$category = $quiz->getCategory()->getName();
+            $data[] = [
+                'id' => $quiz->getId(),
+                'name' => $quiz->getName(),
+                'category' => $category,
+                'created' => $quiz->getDateOfCreation(),
+            ];
+        }
+
+        return new JsonResponse(['quizes' => $data], Response::HTTP_OK);
+    }
 
     #[Route('/api/quiz/{id}', name: 'api_quiz_show', methods: ['GET'])]
     public function show(int $id, EntityManagerInterface $entityManager): JsonResponse

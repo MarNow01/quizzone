@@ -43,9 +43,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?int $ProfilePicture = null;
 
+    /**
+     * @var Collection<int, AttemptQuiz>
+     */
+    #[ORM\OneToMany(targetEntity: AttemptQuiz::class, mappedBy: 'User', orphanRemoval: true)]
+    private Collection $attemptQuizzes;
+
     public function __construct()
     {
         $this->quizzes = new ArrayCollection();
+        $this->attemptQuizzes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -161,6 +168,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setProfilePicture(?int $ProfilePicture): static
     {
         $this->ProfilePicture = $ProfilePicture;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, AttemptQuiz>
+     */
+    public function getAttemptQuizzes(): Collection
+    {
+        return $this->attemptQuizzes;
+    }
+
+    public function addAttemptQuiz(AttemptQuiz $attemptQuiz): static
+    {
+        if (!$this->attemptQuizzes->contains($attemptQuiz)) {
+            $this->attemptQuizzes->add($attemptQuiz);
+            $attemptQuiz->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAttemptQuiz(AttemptQuiz $attemptQuiz): static
+    {
+        if ($this->attemptQuizzes->removeElement($attemptQuiz)) {
+            // set the owning side to null (unless already changed)
+            if ($attemptQuiz->getUser() === $this) {
+                $attemptQuiz->setUser(null);
+            }
+        }
 
         return $this;
     }

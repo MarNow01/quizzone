@@ -33,6 +33,11 @@ api-quiz:
     {id} - id quizu
     zwraca: ['quiz'['id','name', 'author', 'questions'['content','answerA','answerB','answerC','answerD','correctAnswer']]]
     
+    [GET]
+    /api/userquizes
+    zwraca quizy aktualnie zalogowanego użytkownika
+    zwraca: ['quizes'['id', 'name','category', 'created'['date','timezone_type','timezone']]]
+
     [DELETE]
     /api/quiz/{id}
     {id} - id quizu
@@ -72,7 +77,7 @@ api-category:
     /api/category/{id}
     {id} - id kategorii
     zwraca listę quizów danej kategorii
-    zwraca: ['category':['id', 'name','quizes'['id', 'name','category', 'created']]]
+    zwraca: ['category':['id', 'name','quizes'['id', 'name', 'author_id', 'date_of_creation'['date','timezone_type','timezone']]]]
 
     [DELETE]
     /api/category/{id}
@@ -89,3 +94,5 @@ api-category:
     edytuje właściwości kategorii
     {id} - id kategorii
     format: ['name']
+
+    
