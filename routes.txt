@@ -25,7 +25,7 @@ api-quiz:
     [GET]
     /api/quizes
     zwraca listę quizów
-    zwraca: ['quizes'['id', 'name','category', 'created']]
+    zwraca: ['quizes'['id', 'name','category','author_name', 'created']]
 
     [GET]
     /api/quiz/{id}
@@ -95,4 +95,16 @@ api-category:
     {id} - id kategorii
     format: ['name']
 
+api-attemptQuiz:
+    [POST]
+    /api/startquiz/{id}
+    zapisuje uczestnictwo użytkownika w quizie
+    {id} - id quizu
+    format:[]
+
+    [GET]
+    '/api/attemptquiz/{id}
+    zwraca pytania z quizu
+    {id} - id quizu
+    zwraca ['attemptQuiz'['id','name','questions'['content','answerA','answerB','answerC','answerD']]]
     

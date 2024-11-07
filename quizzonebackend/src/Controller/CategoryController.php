@@ -43,7 +43,7 @@ class CategoryController extends AbstractController
             $quizes[] = [
                 'id' => $quiz->getId(),
                 'name' => $quiz->getName(),
-                'author_id' => $quiz->getAuthor(),
+                'author_name' => $quiz->getAuthor()->getUsername(),
                 'date_of_creation' => $quiz->getDateOfCreation(),
             ];
         }

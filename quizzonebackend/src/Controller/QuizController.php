@@ -27,6 +27,7 @@ class QuizController extends AbstractController
             $data[] = [
                 'id' => $quiz->getId(),
                 'name' => $quiz->getName(),
+                'author_name' => $quiz->getAuthor()->getUsername(),
                 'category' => $category,
                 'created' => $quiz->getDateOfCreation(),
             ];
@@ -34,8 +35,7 @@ class QuizController extends AbstractController
 
         return new JsonResponse(['quizes' => $data], Response::HTTP_OK);
     }
-   
-    
+
     #[Route('/api/userquizes', name: 'api_user_quizes', methods: ['GET'])]
     public function userquizzes(QuizRepository $quizRepository): JsonResponse
     {
@@ -102,6 +102,14 @@ class QuizController extends AbstractController
 
         if (!$quiz) {
             return new JsonResponse(['error' => 'Nie znaleziono quizu.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+        
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Użytkownik musi być zalogowany, by usunąć quiz'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+        if($quiz->getAuthor() != $user){
+            return new JsonResponse(['error' => 'Tylko autor quizu może go usunąć '], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
         $entityManager->remove($quiz);
