@@ -8,15 +8,80 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class AttemptQuizController extends AbstractController
 {
+    #[Route('/api/attemptquiz/{id}', name: 'api_attempt_quiz', methods: ['GET'])]
+    public function attemptQuiz(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $attemptQuiz = $entityManager->getRepository(AttemptQuiz::class)->find($id);
+        if (!$attemptQuiz) {
+            return new JsonResponse(['error' => 'Błąd pobierania pytania.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        $questions = [];
+        foreach ($attemptQuiz -> getQuiz() -> getQuestions() as $question) {
+            $questions[] = [
+                'id' => $question->getId(),
+                'image' => $question->getImage() ? $question->getImage():null,
+                'content' => $question->getContent(),
+                'answerA' => $question->getAnswerA(),
+                'answerB' => $question->getAnswerB(),
+                'answerC' => $question->getAnswerC(),
+                'answerD' => $question->getAnswerD(),
+            ];
+        }
+
+        return new JsonResponse([
+            'attemptQuiz' => [
+                'id' => $attemptQuiz -> getId(),
+                'name' => $attemptQuiz -> getQuiz() -> getName(),
+                'questions' => $questions,
+            ]
+        ]);
+    }
+
+    #[Route('/api/score/{id}', name: 'api_score', methods: ['GET'])]
+    public function score(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $attemptQuiz = $entityManager->getRepository(AttemptQuiz::class)->find($id);
+        if (!$attemptQuiz) {
+            return new JsonResponse(['error' => 'Błąd sprawdzania wyniku.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        $correct = 0;
+        $incorrect = 0;
+        $notAnswered = 0;
+        $all = 0;
+
+        foreach ($attemptQuiz -> getAttemptQuestions() as $attemptQuestion) {
+            if($attemptQuestion -> getAnsweredAnswer() == null){
+                $notAnswered ++;
+            }
+            else if($attemptQuestion -> getAnsweredAnswer() == $attemptQuestion -> getQuestion() -> getCorrectAnswer()){
+                $correct ++;
+            }
+            else{
+                $notCorrect ++;
+            }
+            $all++;
+        }
+
+        return new JsonResponse([
+            'score' => [
+                'correct' => $correct,
+                'incorrect' => $incorrect,
+                'notAnswered' => $notAnswered,
+                'all' => $all,
+            ]
+        ]);
+    }
+
     #[Route('/api/startquiz/{id}', name: 'api_start_quiz', methods: ['POST'])]
     public function startQuiz(Request $request, EntityManagerInterface $entityManager, int $id): JsonResponse
     {
         $user = $this->getUser();
         if (!$user) {
-            return new JsonResponse(['error' => 'Użytkownik musi być zalogowany, rozwiązywać quiz.'], JsonResponse::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['error' => 'Użytkownik musi być zalogowany, by rozwiązywać quiz.'], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
-        // Wyszukiwanie quizu po ID
         $quiz = $entityManager->getRepository(Quiz::class)->find($id);
         if (!$quiz) {
             return new JsonResponse(['error' => 'Nie znaleziono quozu.'], JsonResponse::HTTP_NOT_FOUND);
@@ -44,33 +109,101 @@ class AttemptQuizController extends AbstractController
         ], JsonResponse::HTTP_CREATED);
     }
 
-    #[Route('/api/attemptquiz/{id}', name: 'api_attempt_quiz', methods: ['GET'])]
-    public function attemptQuiz(int $id, EntityManagerInterface $entityManager): JsonResponse
+    #[Route('/api/answerToOne/{id}', name: 'api_answerToOne', methods: ['POST'])]
+    public function answerToOne(int $id, Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
-        $attemptQuiz = $entityManager->getRepository(AttemptQuiz::class)->find($id);
-        if (!$attemptQuiz) {
-            return new JsonResponse(['error' => 'Błąd pobierania pytania.'], JsonResponse::HTTP_NOT_FOUND);
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Użytkownik musi być zalogowany, by odpowiedzieć.'], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
-        $questions = [];
-        foreach ($attemptQuiz -> getQuiz() -> getQuestions() as $question) {
-            $questions[] = [
-                'id' => $question->getId(),
-                'image' => $question->getImage() ? $question->getImage():null,
-                'content' => $question->getContent(),
-                'answerA' => $question->getAnswerA(),
-                'answerB' => $question->getAnswerB(),
-                'answerC' => $question->getAnswerC(),
-                'answerD' => $question->getAnswerD(),
-            ];
+        $attemptQuestion = $entityManager->getRepository(AttemptQuestion::class)->find($id);
+        if (!$attemptQuestion) {
+            return new JsonResponse(['error' => 'Błąd bazy danych - nie znaleziono attemptQuestiona o tym ID.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        if (!$user != $attemptQuestion->getAttemptQuiz()->getUser()) {
+            return new JsonResponse(['error' => 'Zalogowany uzytkownik nie ma dostępu do tego podejścia.'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
+        //Odebranie odpowiedzi 
+        $data = json_decode($request->getContent(), true);
+
+        if (empty($data['answer'])) {
+            return new JsonResponse(['error' => 'Wartość "answer" jest wymagana'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        //Zapisanie odpowiedzi
+        $attemptQuestion->setAnsweredAnswer($data['answer']);
+        $entityManager->persist($attemptQuestion);
+        $entityManager->flush();
+
+        //sprawdzanie odpwowiedzi
+        $answer = '';
+        if($attemptQuestion->getAnsweredAnswer() == $attemptQuestion->getQuestion()->getCorrectAnswer()){
+            $answer = 'Poprawna odpowiedź';
+        }
+        else{
+            $answer = 'Poprawna odpowiedź';
         }
 
         return new JsonResponse([
-            'attemptQuiz' => [
-                'id' => $attemptQuiz -> getId(),
-                'name' => $attemmptQuiz -> getQuiz() -> getName(),
-                'questions' => $questions,
+            'results' => [
+                'answer' => $answer,
             ]
+        ]);
+    }
+
+    #[Route('/api/answerToAll/{id}', name: 'api_answerToAll', methods: ['POST'])]
+    public function answerToAll(int $id, Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Użytkownik musi być zalogowany, by odpowiedzieć.'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
+        $attemptQuiz = $entityManager->getRepository(attemptQuiz::class)->find($id);
+        if (!$attemptQuiz) {
+            return new JsonResponse(['error' => 'Błąd bazy danych - nie znaleziono attemptQuiz o tym ID.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        if (!$user != $attemptQuiz()->getUser()) {
+            return new JsonResponse(['error' => 'Zalogowany uzytkownik nie ma dostępu do tego podejścia.'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
+        // Odebranie odpowiedzi 
+        $data = json_decode($request->getContent(), true);
+
+        if (empty($data['answers']) || !is_array($data['answers'])) {
+            return new JsonResponse(['error' => 'Wartość "answers" jest wymagana. Poprawny format: "answers" => [{"id": int, "answer": string}].'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Wczytanie attemptQuestionów z bazy
+        $attemptQuestions = $attemptQuiz->getAttemptQuestions();
+
+        // Przetwarzanie i zapisywanie odpowiedzi
+        foreach ($data['answers'] as $answerData) {
+            $attemptQuestionId = $answerData['id'] ?? null;
+            $answer= $answerData['answer'] ?? null;
+
+            if (!$attemptQuestionId || !$answer) {
+                continue;
+            }
+
+            // Znalezienie odpowiedniego attemptQuestion na podstawie ID
+            foreach ($attemptQuestions as $attemptQuestion) {
+                if ($attemptQuestion->getId() === $attemptQuestionId) {
+                    $attemptQuestion->setAnsweredAnswer($answer);
+                    $entityManager->persist($attemptQuestion);
+                    break;
+                }
+            }
+        }
+
+        $entityManager->flush();
+
+        return new JsonResponse([
+            'result' => "Odpowiedzi zapisane",
         ]);
     }
 }
