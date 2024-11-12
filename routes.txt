@@ -96,15 +96,33 @@ api-category:
     format: ['name']
 
 api-attemptQuiz:
+    [GET]
+    /api/attemptquiz/{id}
+    zwraca pytania z quizu
+    {id} - id attemptQuizu
+    zwraca ['attemptQuiz'['id','name','questions'['content','answerA','answerB','answerC','answerD']]]
+    
+    [GET]
+    /api/score/{id}
+    zwraca wynik z quizu
+    {id} - id attemptQuizu
+    zwraca ['score'['incorrect','notCorrect','notAnswered','all']]
+    
     [POST]
     /api/startquiz/{id}
     zapisuje uczestnictwo użytkownika w quizie
     {id} - id quizu
     format:[]
 
-    [GET]
-    '/api/attemptquiz/{id}
-    zwraca pytania z quizu
-    {id} - id quizu
-    zwraca ['attemptQuiz'['id','name','questions'['content','answerA','answerB','answerC','answerD']]]
+    [POST]
+    /api/answerToOne/{id}
+    Przesyła odpwiedź na jedno pytanie
+    {id} - id attemptQuestion
+    format: ['answer']
+
+    [POST]
+    /api/answerToAll/{id}
+    Przesyła odpwiedź na wszystkie pytania w danym attemptQuiz
+    {id} - id attemptQuiz
+    format: ['answers'['id','answer']]
     
