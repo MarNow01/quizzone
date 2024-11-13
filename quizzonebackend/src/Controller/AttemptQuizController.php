@@ -2,9 +2,16 @@
 
 namespace App\Controller;
 
+use App\Entity\Quiz;
+use App\Entity\Question;
+use App\Entity\AttemptQuiz;
+use App\Entity\AttemptQuestion;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Doctrine\ORM\EntityManagerInterface;
 
 class AttemptQuizController extends AbstractController
 {
@@ -17,15 +24,15 @@ class AttemptQuizController extends AbstractController
         }
 
         $questions = [];
-        foreach ($attemptQuiz -> getQuiz() -> getQuestions() as $question) {
+        foreach ($attemptQuiz -> getAttemptQuestions() as $question) {
             $questions[] = [
                 'id' => $question->getId(),
-                'image' => $question->getImage() ? $question->getImage():null,
-                'content' => $question->getContent(),
-                'answerA' => $question->getAnswerA(),
-                'answerB' => $question->getAnswerB(),
-                'answerC' => $question->getAnswerC(),
-                'answerD' => $question->getAnswerD(),
+                'image' => $question->getQuestion()->getImage() ? $question->getImage():null,
+                'content' => $question->getQuestion()->getContent(),
+                'answerA' => $question->getQuestion()->getAnswerA(),
+                'answerB' => $question->getQuestion()->getAnswerB(),
+                'answerC' => $question->getQuestion()->getAnswerC(),
+                'answerD' => $question->getQuestion()->getAnswerD(),
             ];
         }
 
@@ -59,7 +66,7 @@ class AttemptQuizController extends AbstractController
                 $correct ++;
             }
             else{
-                $notCorrect ++;
+                $incorrect ++;
             }
             $all++;
         }
@@ -70,6 +77,7 @@ class AttemptQuizController extends AbstractController
                 'incorrect' => $incorrect,
                 'notAnswered' => $notAnswered,
                 'all' => $all,
+                'quizId' => $attemptQuiz->getQuiz()->getId(),
             ]
         ]);
     }
@@ -105,7 +113,9 @@ class AttemptQuizController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse([
-            'message' => 'Użytkownik podjął próbę rozwiązania quizu.'
+            'message' => 'Użytkownik podjął próbę rozwiązania quizu.',
+            'id_attempt' => $attemptQuiz->getId(),
+            'name' => $attemptQuiz->getQuiz()->getName(),
         ], JsonResponse::HTTP_CREATED);
     }
 
@@ -122,7 +132,7 @@ class AttemptQuizController extends AbstractController
             return new JsonResponse(['error' => 'Błąd bazy danych - nie znaleziono attemptQuestiona o tym ID.'], JsonResponse::HTTP_NOT_FOUND);
         }
 
-        if (!$user != $attemptQuestion->getAttemptQuiz()->getUser()) {
+        if ($user != $attemptQuestion->getAttemptQuiz()->getUser()) {
             return new JsonResponse(['error' => 'Zalogowany uzytkownik nie ma dostępu do tego podejścia.'], JsonResponse::HTTP_UNAUTHORIZED);
         }
 
@@ -144,7 +154,7 @@ class AttemptQuizController extends AbstractController
             $answer = 'Poprawna odpowiedź';
         }
         else{
-            $answer = 'Poprawna odpowiedź';
+            $answer = 'Niepoprawna odpowiedź';
         }
 
         return new JsonResponse([
