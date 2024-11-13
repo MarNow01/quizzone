@@ -38,10 +38,27 @@ api-quiz:
     zwraca quizy aktualnie zalogowanego użytkownika
     zwraca: ['quizes'['id', 'name','category', 'created'['date','timezone_type','timezone']]]
 
+    [GET]
+    /api/quiz/{id}/getcomments
+    zwraca: ['id','content','authorName','dateOfCreation']
+    zwraca wszystkie komentarze dla danego quizu
+
     [DELETE]
     /api/quiz/{id}
     {id} - id quizu
     usuwa quiz
+
+    [DELETE]
+    /api/comment/{id}
+    {id} - id komentarza
+    usuwa komentarz
+
+    [POST]
+    /api/quiz/{id}/comment
+    {id} - id quizu
+    zwraca: ['id','content','authorId','quizId','dateOfCreation']
+    format: ['content']
+    dodaje nowy komentarz
 
     [POST]
     /api/quiz/new
