@@ -106,7 +106,7 @@ api-attemptQuiz:
     /api/score/{id}
     zwraca wynik z quizu
     {id} - id attemptQuizu
-    zwraca ['score'['incorrect','notCorrect','notAnswered','all']]
+    zwraca ['score'['correct','incorrect','notAnswered','all','quizId']]
     
     [POST]
     /api/startquiz/{id}
