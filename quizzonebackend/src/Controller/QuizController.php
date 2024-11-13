@@ -6,6 +6,7 @@ use App\Repository\QuizRepository;
 use App\Repository\QuestionRepository;
 use App\Entity\Quiz;
 use App\Entity\Question;
+use App\Entity\Comment;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -242,4 +243,91 @@ class QuizController extends AbstractController
         return new JsonResponse(['message' => 'Pytanie zmodyfiokowane pomyślnie.'], JsonResponse::HTTP_OK);
     }
 
+    #[Route('/api/quiz/{id}/comment', name: 'add_comment', methods: ['POST'])]
+    public function addComment(
+        int $id,
+        Request $request,
+        QuizRepository $quizRepository,
+        UserRepository $userRepository,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $data = json_decode($request->getContent(), true);
+
+        if (!isset($data['content'], $data['authorId'])) {
+            return new JsonResponse(['error' => 'Brak wymaganych pól'], 400);
+        }
+
+        $quiz = $quizRepository->find($id);
+        $author = $userRepository->find($data['authorId']);
+
+        if (!$quiz || !$author) {
+            return new JsonResponse(['error' => 'Błędny quiz lub autor'], 404);
+        }
+
+        $comment = new Comment();
+        $comment->setContent($data['content'])
+                ->setAuthor($author)
+                ->setQuiz($quiz)
+                ->setDateOfCreation(new \DateTime());
+
+        $em->persist($comment);
+        $em->flush();
+
+        return new JsonResponse([
+            'id' => $comment->getId(),
+            'content' => $comment->getContent(),
+            'authorId' => $author->getId(),
+            'quizId' => $quiz->getId(),
+            'dateOfCreation' => $comment->getDateOfCreation()->format('Y-m-d H:i:s')
+        ], 201);
+    }
+
+    #[Route('/api/comment/{id}', name: 'delete_comment', methods: ['DELETE'])]
+    public function deleteComment(
+        int $id,
+        EntityManagerInterface $em,
+        CommentRepository $commentRepository
+    ): JsonResponse {
+        $user = $this -> getUser();
+        if ($user != $comment->getAuthor()){
+            return new JsonResponse(['error' => 'Zalogowany uzytkownik nie może usunąć tego komentarza.'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
+        $comment = $commentRepository->find($id);
+        if (!$comment) {
+            return new JsonResponse(['error' => 'Nie znaleziono komentarza'], 404);
+        }
+
+        $em->remove($comment);
+        $em->flush();
+
+        return new JsonResponse(['message' => 'Usunięto komentarz'], 200);
+    }
+
+    #[Route('/api/quiz/{id}/getcomments', name: 'get_comments', methods: ['GET'])]
+    public function getComments(
+        int $id,
+        QuizRepository $quizRepository,
+        CommentRepository $commentRepository
+    ): JsonResponse {
+
+        $quiz = $quizRepository->find($id);
+
+        if (!$quiz) {
+            return new JsonResponse(['error' => 'Nie znaleziono quizu'], 404);
+        }
+
+        $comments = $commentRepository->findBy(['quiz' => $quiz]);
+
+        $commentsData = array_map(function ($comment) {
+            return [
+                'id' => $comment->getId(),
+                'content' => $comment->getContent(),
+                'authorName' => $comment->getAuthor()->getUsername(),
+                'dateOfCreation' => $comment->getDateOfCreation()->format('Y-m-d H:i:s')
+            ];
+        }, $comments);
+
+        return new JsonResponse($commentsData, 200);
+    }
 }
