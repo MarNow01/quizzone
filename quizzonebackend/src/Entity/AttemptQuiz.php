@@ -33,6 +33,12 @@ class AttemptQuiz
     #[ORM\OneToMany(targetEntity: AttemptQuestion::class, mappedBy: 'AttemptQuiz', orphanRemoval: true)]
     private Collection $attemptQuestions;
 
+    #[ORM\Column]
+    private ?int $Status = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $Score = null;
+
     public function __construct()
     {
         $this->attemptQuestions = new ArrayCollection();
@@ -105,6 +111,30 @@ class AttemptQuiz
                 $attemptQuestion->setAttemptQuiz(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getStatus(): ?int
+    {
+        return $this->Status;
+    }
+
+    public function setStatus(int $Status): static
+    {
+        $this->Status = $Status;
+
+        return $this;
+    }
+
+    public function getScore(): ?int
+    {
+        return $this->Score;
+    }
+
+    public function setScore(?int $Score): static
+    {
+        $this->Score = $Score;
 
         return $this;
     }

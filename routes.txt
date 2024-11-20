@@ -2,7 +2,7 @@ api-user:
     [GET]
     /api/user
     zwraca informacje o zalogowanym użytkowniku
-    zwraca: ['user':['username','profilePicture']]
+    zwraca: ['user':['username','profilePicture','points']]
 
     [POST]
     /api/register
@@ -26,6 +26,12 @@ api-quiz:
     /api/quizes
     zwraca listę quizów
     zwraca: ['quizes'['id', 'name','category','author_name', 'created']]
+
+    [GET]
+    /api/quiz/{id}
+    zwraca konkretny quiz
+    {id} - id quizu
+    zwraca: ['quiz'['id','name', 'author', 'questions'['content','answerA','answerB','answerC','answerD','correctAnswer']]]
 
     [GET]
     /api/quiz/{id}
