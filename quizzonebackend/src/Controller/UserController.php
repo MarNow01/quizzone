@@ -29,7 +29,9 @@ class UserController extends AbstractController
 
         return new JsonResponse(['user' => [
             'username' => $user->getUsername(),
-            'profilePicture' => $user->getProfilePicture()]
+            'profilePicture' => $user->getProfilePicture(),
+            'points' => $user->getPoints(),
+            ]
         ]);
     }
 

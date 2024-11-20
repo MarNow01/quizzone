@@ -48,27 +48,80 @@ class AttemptQuizController extends AbstractController
     #[Route('/api/score/{id}', name: 'api_score', methods: ['GET'])]
     public function score(int $id, EntityManagerInterface $entityManager): JsonResponse
     {
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Użytkownik musi być zalogowany, zakończyć quiz.'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
         $attemptQuiz = $entityManager->getRepository(AttemptQuiz::class)->find($id);
         if (!$attemptQuiz) {
             return new JsonResponse(['error' => 'Błąd sprawdzania wyniku.'], JsonResponse::HTTP_NOT_FOUND);
         }
+
+        $quizEntity = $attemptQuiz->getQuiz();
+        if (!$quizEntity) {
+            return new JsonResponse(['error' => 'Quiz nie jest przypisany do próby.'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        $quiz = $quizEntity->getId();
+        $attemptQuizez = $entityManager->getRepository(AttemptQuiz::class)->findBy(
+            ['Quiz' => $quiz, 'User' => $user->getId()],
+            ['Score' => 'DESC']
+        );
 
         $correct = 0;
         $incorrect = 0;
         $notAnswered = 0;
         $all = 0;
 
-        foreach ($attemptQuiz -> getAttemptQuestions() as $attemptQuestion) {
-            if($attemptQuestion -> getAnsweredAnswer() == null){
-                $notAnswered ++;
-            }
-            else if($attemptQuestion -> getAnsweredAnswer() == $attemptQuestion -> getQuestion() -> getCorrectAnswer()){
-                $correct ++;
-            }
-            else{
-                $incorrect ++;
+        foreach ($attemptQuiz->getAttemptQuestions() as $attemptQuestion) {
+            $answeredAnswer = $attemptQuestion->getAnsweredAnswer();
+            $correctAnswer = $attemptQuestion->getQuestion()?->getCorrectAnswer();
+
+            if ($answeredAnswer === null) {
+                $notAnswered++;
+            } elseif ($answeredAnswer === $correctAnswer) {
+                $correct++;
+            } else {
+                $incorrect++;
             }
             $all++;
+        }
+
+        // Ustawianie attemptQuiz jako zakończony
+        $attemptQuiz->setStatus(1);
+        $score = $all > 0 ? (int)(($correct / $all) * 100) : 0;
+        $attemptQuiz->setScore($score);
+
+        // Obliczanie punktów
+        $pointsToAdd = 0;
+
+        if (!empty($attemptQuizez)) {
+            $bestPreviousAttempt = $attemptQuizez[0];
+            $bestPreviousScore = $bestPreviousAttempt->getScore();
+
+            if ($score > $bestPreviousScore) {
+                $previousPoints = (int)($bestPreviousScore / 20);
+                $newPoints = (int)($score / 20);
+                $pointsToAdd = $newPoints - $previousPoints;
+            }
+        } else {
+            $pointsToAdd = (int)($score / 20);
+        }
+
+        $currentPoints = $user->getPoints() ?? 0;
+        $user->setPoints($currentPoints + $pointsToAdd);
+
+        // Zapis
+        $entityManager->beginTransaction();
+        try {
+            $entityManager->persist($attemptQuiz);
+            $entityManager->persist($user);
+            $entityManager->flush();
+            $entityManager->commit();
+        } catch (\Exception $e) {
+            $entityManager->rollback();
+            return new JsonResponse(['error' => 'Błąd zapisu danych.'], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         return new JsonResponse([
@@ -77,10 +130,11 @@ class AttemptQuizController extends AbstractController
                 'incorrect' => $incorrect,
                 'notAnswered' => $notAnswered,
                 'all' => $all,
-                'quizId' => $attemptQuiz->getQuiz()->getId(),
-            ]
+                'quizId' => $quiz,
+            ],
         ]);
     }
+
 
     #[Route('/api/startquiz/{id}', name: 'api_start_quiz', methods: ['POST'])]
     public function startQuiz(Request $request, EntityManagerInterface $entityManager, int $id): JsonResponse
@@ -98,6 +152,7 @@ class AttemptQuizController extends AbstractController
         $attemptQuiz = new attemptQuiz();
         $attemptQuiz -> setUser($user);
         $attemptQuiz -> setQuiz($quiz);
+        $attemptQuiz -> setStatus(0);
         $attemptQuiz->setDateOfCreation(new \DateTime());
         
     

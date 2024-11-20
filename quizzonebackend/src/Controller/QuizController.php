@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Repository\QuizRepository;
 use App\Repository\QuestionRepository;
+use App\Repository\CommentRepository;
+use App\Repository\UserRepository;
 use App\Entity\Quiz;
 use App\Entity\Question;
 use App\Entity\Comment;
@@ -96,6 +98,27 @@ class QuizController extends AbstractController
         ]);
     }
 
+    #[Route('/api/quizinfo/{id}', name: 'api_quiz_info', methods: ['GET'])]
+    public function info(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $quiz = $entityManager->getRepository(Quiz::class)->find($id);
+        if (!$quiz) {
+            return new JsonResponse(['error' => 'Nie znaleziono quizu.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        $category = null;
+        if($quiz->getCategory())$category = $quiz->getCategory()->getName();
+
+        return new JsonResponse([
+            'quiz' => [
+                'id' => $quiz->getId(),
+                'name' => $quiz->getName(),
+                'author' => $quiz->getAuthor()->getUsername(),
+                'category' => $category,
+            ]
+        ]);
+    }
+
     #[Route('/api/quiz/{id}', name: 'api_quiz_delete', methods: ['DELETE'])]
     public function deleteQuiz(int $id, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -132,9 +155,10 @@ class QuizController extends AbstractController
         if (empty($data['name'])) {
             return new JsonResponse(['error' => 'Nazwa quizu jest wymagana.'], JsonResponse::HTTP_BAD_REQUEST);
         }
-
         $quiz = new Quiz();
         $quiz->setName($data['name']);
+        $category = $entityManager->getRepository(Category::class)->find($data['categoryId']);
+        $quiz->setCategory($category);
         $quiz->setAuthor($user);
         $quiz->setDateOfCreation(new \DateTime()); // Ustawienie daty na aktualną datę i czas
 
@@ -209,6 +233,8 @@ class QuizController extends AbstractController
         }
 
         $quiz->setName($data['name']);
+        $category = $entityManager->getRepository(Category::class)->find($data['categoryId']);
+        $quiz->setCategory($category);
         $quiz->setDateOfCreation(new \DateTime());
 
         $entityManager->flush();
@@ -244,29 +270,28 @@ class QuizController extends AbstractController
     }
 
     #[Route('/api/quiz/{id}/comment', name: 'add_comment', methods: ['POST'])]
-    public function addComment(
-        int $id,
-        Request $request,
-        QuizRepository $quizRepository,
-        UserRepository $userRepository,
-        EntityManagerInterface $em
-    ): JsonResponse {
+    public function addComment(int $id, Request $request, QuizRepository $quizRepository, UserRepository $userRepository, EntityManagerInterface $em): JsonResponse 
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Użytkownik musi być zalogowany, napisać komentarz.'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+
         $data = json_decode($request->getContent(), true);
 
-        if (!isset($data['content'], $data['authorId'])) {
+        if (!isset($data['content'])) {
             return new JsonResponse(['error' => 'Brak wymaganych pól'], 400);
         }
 
         $quiz = $quizRepository->find($id);
-        $author = $userRepository->find($data['authorId']);
 
-        if (!$quiz || !$author) {
+        if (!$quiz || !$user) {
             return new JsonResponse(['error' => 'Błędny quiz lub autor'], 404);
         }
 
         $comment = new Comment();
         $comment->setContent($data['content'])
-                ->setAuthor($author)
+                ->setAuthor($user)
                 ->setQuiz($quiz)
                 ->setDateOfCreation(new \DateTime());
 
@@ -276,18 +301,15 @@ class QuizController extends AbstractController
         return new JsonResponse([
             'id' => $comment->getId(),
             'content' => $comment->getContent(),
-            'authorId' => $author->getId(),
+            'authorId' => $user->getId(),
             'quizId' => $quiz->getId(),
             'dateOfCreation' => $comment->getDateOfCreation()->format('Y-m-d H:i:s')
         ], 201);
     }
 
     #[Route('/api/comment/{id}', name: 'delete_comment', methods: ['DELETE'])]
-    public function deleteComment(
-        int $id,
-        EntityManagerInterface $em,
-        CommentRepository $commentRepository
-    ): JsonResponse {
+    public function deleteComment(int $id, EntityManagerInterface $em, CommentRepository $commentRepository): JsonResponse 
+    {
         $user = $this -> getUser();
         if ($user != $comment->getAuthor()){
             return new JsonResponse(['error' => 'Zalogowany uzytkownik nie może usunąć tego komentarza.'], JsonResponse::HTTP_UNAUTHORIZED);
@@ -305,11 +327,8 @@ class QuizController extends AbstractController
     }
 
     #[Route('/api/quiz/{id}/getcomments', name: 'get_comments', methods: ['GET'])]
-    public function getComments(
-        int $id,
-        QuizRepository $quizRepository,
-        CommentRepository $commentRepository
-    ): JsonResponse {
+    public function getComments(int $id, QuizRepository $quizRepository, CommentRepository $commentRepository): JsonResponse
+    {
 
         $quiz = $quizRepository->find($id);
 
