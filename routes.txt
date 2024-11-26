@@ -4,6 +4,11 @@ api-user:
     zwraca informacje o zalogowanym użytkowniku
     zwraca: ['user':['username','profilePicture','points']]
 
+    [GET]
+    /api/leaderboard
+    zwraca listę użutkowników z punktami
+    zwraca: ['leaderboard'['username','points']]
+
     [POST]
     /api/register
     tworzy nowego użytkownika
