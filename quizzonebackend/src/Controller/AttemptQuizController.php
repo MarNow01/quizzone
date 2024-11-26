@@ -65,7 +65,7 @@ class AttemptQuizController extends AbstractController
 
         $quiz = $quizEntity->getId();
         $attemptQuizez = $entityManager->getRepository(AttemptQuiz::class)->findBy(
-            ['Quiz' => $quiz, 'User' => $user->getId()],
+            ['Quiz' => $quiz, 'User' => $user->getId(), 'Status' => 1],
             ['Score' => 'DESC']
         );
 

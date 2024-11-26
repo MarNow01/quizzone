@@ -1,12 +1,14 @@
 <?php
 
 namespace App\Controller;
-
+use App\Entity\User;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+
 
 class UserController extends AbstractController
 {
@@ -58,5 +60,19 @@ class UserController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse(['success' => 'Zdjęcie profilowe zostało zaktualizowane'], Response::HTTP_OK);
+    }
+
+    #[Route('/api/leaderboard', name: 'api_leaderboard' , methods: ['GET'])]
+    public function getLeaderboard(UserRepository $repository): JsonResponse
+    {
+        $users = $repository -> findAll();
+        $leaderboard;
+        foreach($users as $user){
+            $leaderboard[] = [
+                'username' => $user->getUsername(),
+                'points' => $user->getPoints(),
+            ];
+        }
+        return new JsonResponse (['leaderboard' => $leaderboard], Response::HTTP_OK);
     }
 }
