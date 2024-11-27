@@ -78,6 +78,7 @@ class QuizController extends AbstractController
         foreach ($quiz->getQuestions() as $question) {
             $questions[] = [
                 'id' => $question->getId(),
+                'isTrueOrFalse' => $question->isTrueOrFalse(),
                 'content' => $question->getContent(),
                 'answerA' => $question->getAnswerA(),
                 'answerB' => $question->getAnswerB(),
@@ -192,16 +193,22 @@ class QuizController extends AbstractController
 
         $data = json_decode($request->getContent(), true);
 
-        if (empty($data['content']) || empty($data['answerA']) || empty($data['answerB']) || empty($data['correctAnswer'])) {
+        if (empty($data['content']) || empty($data['answerA']) || empty($data['answerB']) || empty($data['correctAnswer']) || empty($data['type'])) {
             return new JsonResponse(['error' => 'Nie podano wszystkich wymaganych pól.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $question = new Question();
+        if($data['type'] == "true-false"){
+            $question->setTrueOrFalse(true);
+        }
+        else{
+            $question->setAnswerC($data['answerC']);
+            $question->setAnswerD($data['answerD']);
+            $question->setTrueOrFalse(false);
+        }
         $question->setContent($data['content']);
         $question->setAnswerA($data['answerA']);
         $question->setAnswerB($data['answerB']);
-        $question->setAnswerC($data['answerC']);
-        $question->setAnswerD($data['answerD']);
         $question->setCorrectAnswer($data['correctAnswer']);
         $question->setQuiz($quiz);
 

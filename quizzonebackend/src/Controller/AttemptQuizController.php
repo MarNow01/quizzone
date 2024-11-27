@@ -28,12 +28,16 @@ class AttemptQuizController extends AbstractController
             $questions[] = [
                 'id' => $question->getId(),
                 'image' => $question->getQuestion()->getImage() ? $question->getImage():null,
+                'isTrueOrFalse' => $question->getQuestion()->isTrueOrFalse(),
                 'content' => $question->getQuestion()->getContent(),
                 'answerA' => $question->getQuestion()->getAnswerA(),
                 'answerB' => $question->getQuestion()->getAnswerB(),
                 'answerC' => $question->getQuestion()->getAnswerC(),
                 'answerD' => $question->getQuestion()->getAnswerD(),
             ];
+        }
+        if(empty($question)){
+            return new JsonResponse(['error' => 'Ten quiz nie ma pytań'], JsonResponse::HTTP_NOT_FOUND);
         }
 
         return new JsonResponse([
@@ -111,6 +115,7 @@ class AttemptQuizController extends AbstractController
 
         $currentPoints = $user->getPoints() ?? 0;
         $user->setPoints($currentPoints + $pointsToAdd);
+        $user->setSolved($user->getSolved()+1);
 
         // Zapis
         $entityManager->beginTransaction();
@@ -134,7 +139,6 @@ class AttemptQuizController extends AbstractController
             ],
         ]);
     }
-
 
     #[Route('/api/startquiz/{id}', name: 'api_start_quiz', methods: ['POST'])]
     public function startQuiz(Request $request, EntityManagerInterface $entityManager, int $id): JsonResponse

@@ -29,10 +29,48 @@ class UserController extends AbstractController
             return new JsonResponse(['error' => 'Użytkownik niezalogowany'], Response::HTTP_UNAUTHORIZED);
         }
 
+        $points = $user->getPoints();
+
+        $calculatePointsForLevel = function ($level) {
+            return 10 + 5 * ($level - 1);
+        };
+    
+        $level = 1;
+        $requiredPoints = $calculatePointsForLevel($level);
+    
+        while ($points >= $requiredPoints) {
+            $points -= $requiredPoints;
+            $level++;
+            $requiredPoints = $calculatePointsForLevel($level);
+        }
+    
+        $have = $points;
+        $nextLevel = $requiredPoints;
+    
+        $titles = [
+            1 => 'Początkujący',
+            5 => 'Młody adept',
+            10 => 'Ekspert',
+            15 => 'Mistrz Quizów',
+        ];
+    
+        $title = 'Legenda';
+        foreach ($titles as $lvl => $lvlTitle) {
+            if ($level < $lvl) {
+                break;
+            }
+            $title = $lvlTitle;
+        }
+
         return new JsonResponse(['user' => [
             'username' => $user->getUsername(),
             'profilePicture' => $user->getProfilePicture(),
+            'solved' => $user->getSolved(),
             'points' => $user->getPoints(),
+            'level' => $level,
+            'have' => $have,
+            'nextLevel' => $nextLevel,
+            'title' => $title,
             ]
         ]);
     }
@@ -71,6 +109,7 @@ class UserController extends AbstractController
             $leaderboard[] = [
                 'username' => $user->getUsername(),
                 'points' => $user->getPoints(),
+                'solved' => $user->getSolved(),
             ];
         }
         return new JsonResponse (['leaderboard' => $leaderboard], Response::HTTP_OK);

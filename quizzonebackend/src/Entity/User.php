@@ -58,6 +58,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $points = null;
 
+    #[ORM\Column]
+    private ?int $Solved = null;
+
     public function __construct()
     {
         $this->quizzes = new ArrayCollection();
@@ -250,6 +253,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPoints(int $points): static
     {
         $this->points = $points;
+
+        return $this;
+    }
+
+    public function getSolved(): ?int
+    {
+        return $this->Solved;
+    }
+
+    public function setSolved(int $Solved): static
+    {
+        $this->Solved = $Solved;
 
         return $this;
     }
