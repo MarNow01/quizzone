@@ -46,6 +46,12 @@ class Question
     #[ORM\OneToMany(targetEntity: AttemptQuestion::class, mappedBy: 'Question', orphanRemoval: true)]
     private Collection $attemptQuestions;
 
+    #[ORM\Column]
+    private ?bool $IsTrueOrFalse = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $TimeLimit = null;
+
     public function __construct()
     {
         $this->attemptQuestions = new ArrayCollection();
@@ -178,6 +184,30 @@ class Question
                 $attemptQuestion->setQuestion(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isTrueOrFalse(): ?bool
+    {
+        return $this->IsTrueOrFalse;
+    }
+
+    public function setTrueOrFalse(bool $IsTrueOrFalse): static
+    {
+        $this->IsTrueOrFalse = $IsTrueOrFalse;
+
+        return $this;
+    }
+
+    public function getTimeLimit(): ?int
+    {
+        return $this->TimeLimit;
+    }
+
+    public function setTimeLimit(?int $TimeLimit): static
+    {
+        $this->TimeLimit = $TimeLimit;
 
         return $this;
     }

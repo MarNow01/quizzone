@@ -2,7 +2,7 @@ api-user:
     [GET]
     /api/user
     zwraca informacje o zalogowanym użytkowniku
-    zwraca: ['user':['username','profilePicture','points']]
+    zwraca: ['user':['username', 'profilePicture', 'solved', 'points', 'level', 'have', 'nextLevel', 'title']]
 
     [GET]
     /api/leaderboard
@@ -36,13 +36,13 @@ api-quiz:
     /api/quiz/{id}
     zwraca konkretny quiz
     {id} - id quizu
-    zwraca: ['quiz'['id','name', 'author', 'questions'['content','answerA','answerB','answerC','answerD','correctAnswer']]]
+    zwraca: ['quiz'['id','name', 'author', 'questions'['isTrueOrFalse','content','answerA','answerB','answerC','answerD','correctAnswer']]]
 
     [GET]
-    /api/quiz/{id}
+    /api/quizinfo/{id}
     zwraca konkretny quiz
     {id} - id quizu
-    zwraca: ['quiz'['id','name', 'author', 'questions'['content','answerA','answerB','answerC','answerD','correctAnswer']]]
+    zwraca: ['quiz'['id','name', 'author', 'category']]
     
     [GET]
     /api/userquizes
@@ -74,19 +74,19 @@ api-quiz:
     [POST]
     /api/quiz/new
     tworzy nowy quiz
-    format: ['name']
+    format: ['name', 'categoryId']
 
     [POST]
     /api/quiz/{id}/add-question
     dodaje nowe pytanie do istniejącego quizu
     {id} - id quizu
-    format: ['content','answerA','answerB','answerC','answerD','correctAnswer']
+    format: ['content','type','answerA','answerB','answerC','answerD','correctAnswer']
 
     [PUT]
     /api/quiz/{id}
     edytuje właściwości quizu
     {id} - id quizu
-    format: ['name']
+    format: ['name', 'categoryId']
 
     [PUT]
     /api/quiz/{quizId}/questions/{questionId}
@@ -128,7 +128,7 @@ api-attemptQuiz:
     /api/attemptquiz/{id}
     zwraca pytania z quizu
     {id} - id attemptQuizu
-    zwraca ['attemptQuiz'['id','name','questions'['content','answerA','answerB','answerC','answerD']]]
+    zwraca ['attemptQuiz'['id','name','questions'['content','isTrueOrFalse','answerA','answerB','answerC','answerD']]]
     
     [GET]
     /api/score/{id}
