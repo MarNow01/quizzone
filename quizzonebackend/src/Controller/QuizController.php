@@ -9,6 +9,7 @@ use App\Repository\UserRepository;
 use App\Entity\Quiz;
 use App\Entity\Question;
 use App\Entity\Comment;
+use App\Entity\Category;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -161,7 +162,7 @@ class QuizController extends AbstractController
         $category = $entityManager->getRepository(Category::class)->find($data['categoryId']);
         $quiz->setCategory($category);
         $quiz->setAuthor($user);
-        $quiz->setDateOfCreation(new \DateTime()); // Ustawienie daty na aktualną datę i czas
+        $quiz->setDateOfCreation(new \DateTime());
 
         $entityManager->persist($quiz);
         $entityManager->flush();
@@ -200,6 +201,9 @@ class QuizController extends AbstractController
         $question = new Question();
         if($data['type'] == "true-false"){
             $question->setTrueOrFalse(true);
+        }
+        if($data['timer']){
+            $question->setTimeLimit($data['timer']);
         }
         else{
             $question->setAnswerC($data['answerC']);
