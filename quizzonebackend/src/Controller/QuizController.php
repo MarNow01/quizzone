@@ -202,13 +202,14 @@ class QuizController extends AbstractController
         if($data['type'] == "true-false"){
             $question->setTrueOrFalse(true);
         }
-        if($data['timer']){
-            $question->setTimeLimit($data['timer']);
-        }
         else{
             $question->setAnswerC($data['answerC']);
             $question->setAnswerD($data['answerD']);
             $question->setTrueOrFalse(false);
+        }
+        
+        if($data['timer']){
+            $question->setTimeLimit($data['timer']);
         }
         $question->setContent($data['content']);
         $question->setAnswerA($data['answerA']);
