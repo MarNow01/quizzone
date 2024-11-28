@@ -29,6 +29,7 @@ class AttemptQuizController extends AbstractController
                 'id' => $question->getId(),
                 'image' => $question->getQuestion()->getImage() ? $question->getImage():null,
                 'isTrueOrFalse' => $question->getQuestion()->isTrueOrFalse(),
+                'timeLimit' => $question->getQuestion()->getTimeLimit(),
                 'content' => $question->getQuestion()->getContent(),
                 'answerA' => $question->getQuestion()->getAnswerA(),
                 'answerB' => $question->getQuestion()->getAnswerB(),
