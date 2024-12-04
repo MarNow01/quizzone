@@ -36,7 +36,7 @@ api-quiz:
     /api/quiz/{id}
     zwraca konkretny quiz
     {id} - id quizu
-    zwraca: ['quiz'['id','name', 'author', 'questions'['isTrueOrFalse','content','answerA','answerB','answerC','answerD','correctAnswer']]]
+    zwraca: ['quiz'['id','name', 'author', 'questions'['isTrueOrFalse','isOpen','content','answerA','answerB','answerC','answerD','timeLimit','correctAnswer']]]
 
     [GET]
     /api/quizinfo/{id}
@@ -80,7 +80,8 @@ api-quiz:
     /api/quiz/{id}/add-question
     dodaje nowe pytanie do istniejącego quizu
     {id} - id quizu
-    format: ['content','type','answerA','answerB','answerC','answerD','correctAnswer']
+    format: ['content','type','answerA','answerB','answerC','answerD','timer','correctAnswer']
+    wartości 'type': 'true-false', 'open', null
 
     [PUT]
     /api/quiz/{id}
@@ -128,7 +129,7 @@ api-attemptQuiz:
     /api/attemptquiz/{id}
     zwraca pytania z quizu
     {id} - id attemptQuizu
-    zwraca ['attemptQuiz'['id','name','questions'['content','isTrueOrFalse','answerA','answerB','answerC','answerD']]]
+    zwraca ['attemptQuiz'['id','name','questions'['content','isTrueOrFalse','isOpen','answerA','answerB','answerC','answerD','timeLimit']]]
     
     [GET]
     /api/score/{id}

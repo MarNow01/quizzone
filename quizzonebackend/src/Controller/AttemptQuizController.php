@@ -29,12 +29,13 @@ class AttemptQuizController extends AbstractController
                 'id' => $question->getId(),
                 'image' => $question->getQuestion()->getImage() ? $question->getImage():null,
                 'isTrueOrFalse' => $question->getQuestion()->isTrueOrFalse(),
-                'timeLimit' => $question->getQuestion()->getTimeLimit(),
+                'isOpen' => $question->getQuestion()->isOpen(),
                 'content' => $question->getQuestion()->getContent(),
                 'answerA' => $question->getQuestion()->getAnswerA(),
                 'answerB' => $question->getQuestion()->getAnswerB(),
                 'answerC' => $question->getQuestion()->getAnswerC(),
                 'answerD' => $question->getQuestion()->getAnswerD(),
+                'timeLimit' => $question->getQuestion()->getTimeLimit(),
             ];
         }
         if(empty($question)){

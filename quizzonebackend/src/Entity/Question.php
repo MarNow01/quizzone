@@ -21,10 +21,10 @@ class Question
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $answerA = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $answerB = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -51,6 +51,9 @@ class Question
 
     #[ORM\Column(nullable: true)]
     private ?int $TimeLimit = null;
+
+    #[ORM\Column]
+    private ?bool $IsOpen = null;
 
     public function __construct()
     {
@@ -91,7 +94,7 @@ class Question
         return $this->answerA;
     }
 
-    public function setAnswerA(string $answerA): static
+    public function setAnswerA(?string $answerA): static
     {
         $this->answerA = $answerA;
 
@@ -103,7 +106,7 @@ class Question
         return $this->answerB;
     }
 
-    public function setAnswerB(string $answerB): static
+    public function setAnswerB(?string $answerB): static
     {
         $this->answerB = $answerB;
 
@@ -208,6 +211,18 @@ class Question
     public function setTimeLimit(?int $TimeLimit): static
     {
         $this->TimeLimit = $TimeLimit;
+
+        return $this;
+    }
+
+    public function isOpen(): ?bool
+    {
+        return $this->IsOpen;
+    }
+
+    public function setOpen(bool $IsOpen): static
+    {
+        $this->IsOpen = $IsOpen;
 
         return $this;
     }
