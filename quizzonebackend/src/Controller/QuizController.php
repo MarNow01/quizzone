@@ -80,11 +80,13 @@ class QuizController extends AbstractController
             $questions[] = [
                 'id' => $question->getId(),
                 'isTrueOrFalse' => $question->isTrueOrFalse(),
+                'isOpen' => $question->isOpen(),
                 'content' => $question->getContent(),
                 'answerA' => $question->getAnswerA(),
                 'answerB' => $question->getAnswerB(),
                 'answerC' => $question->getAnswerC(),
                 'answerD' => $question->getAnswerD(),
+                'timeLimit' => $question->getTimeLimit(),
                 'correctAnswer' => $question->getCorrectAnswer(),
             ];
         }
@@ -194,26 +196,34 @@ class QuizController extends AbstractController
 
         $data = json_decode($request->getContent(), true);
 
-        if (empty($data['content']) || empty($data['answerA']) || empty($data['answerB']) || empty($data['correctAnswer']) || empty($data['type'])) {
+        if (empty($data['content']) || empty($data['correctAnswer']) || empty($data['type'])) {
             return new JsonResponse(['error' => 'Nie podano wszystkich wymaganych pól.'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $question = new Question();
         if($data['type'] == "true-false"){
+            $question->setAnswerA($data['answerA']);
+            $question->setAnswerB($data['answerB']);
             $question->setTrueOrFalse(true);
+            $question->setOpen(false);
+        }
+        else if($data['type'] == "open"){
+            $question->setTrueOrFalse(false);
+            $question->setOpen(true);
         }
         else{
+            $question->setAnswerA($data['answerA']);
+            $question->setAnswerB($data['answerB']);
             $question->setAnswerC($data['answerC']);
             $question->setAnswerD($data['answerD']);
             $question->setTrueOrFalse(false);
+            $question->setOpen(false);
         }
         
         if($data['timer']){
             $question->setTimeLimit($data['timer']);
         }
         $question->setContent($data['content']);
-        $question->setAnswerA($data['answerA']);
-        $question->setAnswerB($data['answerB']);
         $question->setCorrectAnswer($data['correctAnswer']);
         $question->setQuiz($quiz);
 
