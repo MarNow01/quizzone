@@ -61,11 +61,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $Solved = null;
 
+    /**
+     * @var Collection<int, Opinion>
+     */
+    #[ORM\OneToMany(targetEntity: Opinion::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $opinions;
+
     public function __construct()
     {
         $this->quizzes = new ArrayCollection();
         $this->attemptQuizzes = new ArrayCollection();
         $this->comments = new ArrayCollection();
+        $this->opinions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -265,6 +272,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setSolved(int $Solved): static
     {
         $this->Solved = $Solved;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Opinion>
+     */
+    public function getOpinions(): Collection
+    {
+        return $this->opinions;
+    }
+
+    public function addOpinion(Opinion $opinion): static
+    {
+        if (!$this->opinions->contains($opinion)) {
+            $this->opinions->add($opinion);
+            $opinion->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOpinion(Opinion $opinion): static
+    {
+        if ($this->opinions->removeElement($opinion)) {
+            // set the owning side to null (unless already changed)
+            if ($opinion->getUser() === $this) {
+                $opinion->setUser(null);
+            }
+        }
 
         return $this;
     }
