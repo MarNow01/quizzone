@@ -5,10 +5,12 @@ namespace App\Controller;
 use App\Repository\QuizRepository;
 use App\Repository\QuestionRepository;
 use App\Repository\CommentRepository;
+use App\Repository\OpinionRepository;
 use App\Repository\UserRepository;
 use App\Entity\Quiz;
 use App\Entity\Question;
 use App\Entity\Comment;
+use App\Entity\Opinion;
 use App\Entity\Category;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -103,7 +105,7 @@ class QuizController extends AbstractController
     }
 
     #[Route('/api/quizinfo/{id}', name: 'api_quiz_info', methods: ['GET'])]
-    public function info(int $id, EntityManagerInterface $entityManager): JsonResponse
+    public function info(int $id, EntityManagerInterface $entityManager, OpinionRepository $opinionRepository): JsonResponse
     {
         $quiz = $entityManager->getRepository(Quiz::class)->find($id);
         if (!$quiz) {
@@ -113,12 +115,27 @@ class QuizController extends AbstractController
         $category = null;
         if($quiz->getCategory())$category = $quiz->getCategory()->getName();
 
+        $opinions = $opinionRepository->findBy(['quiz'=>$quiz]);
+
+        $opinionssum = array_reduce($opinions, function($carry, $opinion){
+            return $carry + $opinion->getValue();
+        },0);
+
+        if (count($opinions) == 0){
+            $averageOpinion = 0;
+        }
+        else{
+            $averageOpinion = $opinionssum/count($opinions);
+        }
+        
+
         return new JsonResponse([
             'quiz' => [
                 'id' => $quiz->getId(),
                 'name' => $quiz->getName(),
                 'author' => $quiz->getAuthor()->getUsername(),
                 'category' => $category,
+                'averageOpinion' => $averageOpinion,
             ]
         ]);
     }

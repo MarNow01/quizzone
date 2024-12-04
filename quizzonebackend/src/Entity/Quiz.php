@@ -47,11 +47,18 @@ class Quiz
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'quiz', orphanRemoval: true)]
     private Collection $comments;
 
+    /**
+     * @var Collection<int, Opinion>
+     */
+    #[ORM\OneToMany(targetEntity: Opinion::class, mappedBy: 'quiz', orphanRemoval: true)]
+    private Collection $opinions;
+
     public function __construct()
     {
         $this->questions = new ArrayCollection();
         $this->attemptQuizzes = new ArrayCollection();
         $this->comments = new ArrayCollection();
+        $this->opinions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -191,6 +198,36 @@ class Quiz
             // set the owning side to null (unless already changed)
             if ($comment->getQuiz() === $this) {
                 $comment->setQuiz(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Opinion>
+     */
+    public function getOpinions(): Collection
+    {
+        return $this->opinions;
+    }
+
+    public function addOpinion(Opinion $opinion): static
+    {
+        if (!$this->opinions->contains($opinion)) {
+            $this->opinions->add($opinion);
+            $opinion->setQuiz($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOpinion(Opinion $opinion): static
+    {
+        if ($this->opinions->removeElement($opinion)) {
+            // set the owning side to null (unless already changed)
+            if ($opinion->getQuiz() === $this) {
+                $opinion->setQuiz(null);
             }
         }
 
