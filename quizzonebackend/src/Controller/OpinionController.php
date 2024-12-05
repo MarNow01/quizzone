@@ -43,6 +43,7 @@ class OpinionController extends AbstractController
         $status = 201;
 
         if ($oldOpinion){
+            $oldOpinion = $oldOpinion[0];
             $oldOpinion->setValue($data['value']);
             $em->persist($oldOpinion);
             $em->flush();  
