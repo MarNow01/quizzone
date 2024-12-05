@@ -116,6 +116,7 @@ class QuizController extends AbstractController
         if($quiz->getCategory())$category = $quiz->getCategory()->getName();
 
         $opinions = $opinionRepository->findBy(['quiz'=>$quiz]);
+        $countOpinion = count($opinions);
 
         $opinionssum = array_reduce($opinions, function($carry, $opinion){
             return $carry + $opinion->getValue();
@@ -136,6 +137,7 @@ class QuizController extends AbstractController
                 'author' => $quiz->getAuthor()->getUsername(),
                 'category' => $category,
                 'averageOpinion' => $averageOpinion,
+                'countOpinion' => $countOpinion,
             ]
         ]);
     }
