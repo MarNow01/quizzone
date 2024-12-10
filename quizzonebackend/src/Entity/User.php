@@ -67,12 +67,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Opinion::class, mappedBy: 'user', orphanRemoval: true)]
     private Collection $opinions;
 
+    /**
+     * @var Collection<int, Achievement>
+     */
+    #[ORM\ManyToMany(targetEntity: Achievement::class, inversedBy: 'users')]
+    private Collection $Achievements;
+
     public function __construct()
     {
         $this->quizzes = new ArrayCollection();
         $this->attemptQuizzes = new ArrayCollection();
         $this->comments = new ArrayCollection();
         $this->opinions = new ArrayCollection();
+        $this->Achievements = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -302,6 +309,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $opinion->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Achievement>
+     */
+    public function getAchievements(): Collection
+    {
+        return $this->Achievements;
+    }
+
+    public function addAchievement(Achievement $achievement): static
+    {
+        if (!$this->Achievements->contains($achievement)) {
+            $this->Achievements->add($achievement);
+        }
+
+        return $this;
+    }
+
+    public function removeAchievement(Achievement $achievement): static
+    {
+        $this->Achievements->removeElement($achievement);
 
         return $this;
     }

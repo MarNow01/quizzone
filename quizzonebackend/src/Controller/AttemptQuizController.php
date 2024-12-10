@@ -6,6 +6,7 @@ use App\Entity\Quiz;
 use App\Entity\Question;
 use App\Entity\AttemptQuiz;
 use App\Entity\AttemptQuestion;
+use App\Service\AchievementService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -15,6 +16,13 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class AttemptQuizController extends AbstractController
 {
+    private AchievementService $achievementService;
+
+    public function __construct(AchievementService $achievementService)
+    {
+        $this->achievementService = $achievementService;
+    }
+
     #[Route('/api/attemptquiz/{id}', name: 'api_attempt_quiz', methods: ['GET'])]
     public function attemptQuiz(int $id, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -131,6 +139,9 @@ class AttemptQuizController extends AbstractController
             return new JsonResponse(['error' => 'Błąd zapisu danych.'], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
 
+        //Sprawdzanie osiągnięć
+        $isAchievement = $this->achievementService->checkAchievements();
+
         return new JsonResponse([
             'score' => [
                 'correct' => $correct,
@@ -139,6 +150,7 @@ class AttemptQuizController extends AbstractController
                 'all' => $all,
                 'quizId' => $quiz,
             ],
+            'isAchievement' => $isAchievement,
         ]);
     }
 

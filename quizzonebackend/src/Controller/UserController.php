@@ -49,7 +49,7 @@ class UserController extends AbstractController
     
         $titles = [
             1 => 'Początkujący',
-            5 => 'Młody adept',
+            3 => 'Młody adept',
             10 => 'Ekspert',
             15 => 'Mistrz Quizów',
         ];
