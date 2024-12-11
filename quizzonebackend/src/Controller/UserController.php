@@ -3,6 +3,7 @@
 namespace App\Controller;
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Repository\AchievementRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,7 +22,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/api/user', name: 'api_user', methods: ['GET'])]
-    public function user(): JsonResponse
+    public function user(AchievementRepository $achievementRepository): JsonResponse
     {
         $user = $this->getUser();
 
@@ -62,6 +63,18 @@ class UserController extends AbstractController
             $title = $lvlTitle;
         }
 
+        $achievements = [];
+        foreach($user->getAchievements() as $achievement){
+            $achievements[] = [
+                'name' => $achievement->getName(),
+                'description' => $achievement->getDescription(),
+            ];
+        }
+
+        $countAchievements = $achievementRepository -> findAll();
+        $countAchievements = count($countAchievements);
+        $userAchievements = count($achievements);
+
         return new JsonResponse(['user' => [
             'username' => $user->getUsername(),
             'profilePicture' => $user->getProfilePicture(),
@@ -71,6 +84,9 @@ class UserController extends AbstractController
             'have' => $have,
             'nextLevel' => $nextLevel,
             'title' => $title,
+            'achievements' => $achievements,
+            'allAchievements' => $countAchievements,
+            'userAchievements' => $userAchievements,
             ]
         ]);
     }
