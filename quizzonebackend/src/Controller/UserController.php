@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 use App\Entity\User;
+use App\Entity\AttemptQuiz;
 use App\Repository\UserRepository;
 use App\Repository\AchievementRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -9,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Doctrine\ORM\EntityManagerInterface;
 
 
 class UserController extends AbstractController
@@ -129,5 +131,43 @@ class UserController extends AbstractController
             ];
         }
         return new JsonResponse (['leaderboard' => $leaderboard], Response::HTTP_OK);
+    }
+
+    #[Route('/api/user/lastquizzes', name: 'api_user_lastquizzes', methods: ['GET'])]
+    public function lastquizzes(EntityManagerInterface $entityManager): JsonResponse
+    {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Użytkownik niezalogowany'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $lastquizzes = $entityManager->getRepository(AttemptQuiz::class)->findBy(["User" => $user->getId()]);
+
+        if (!$lastquizzes) {
+            return new JsonResponse(['message' => 'Nie znaleziono quizu.']);
+        }
+
+        $quizzesByName = [];
+
+        foreach ($lastquizzes as $quiz) {
+            $quizName = $quiz->getQuiz()->getName();
+
+            if (!isset($quizzesByName[$quizName]) || $quiz->getScore() > $quizzesByName[$quizName]->getScore()) {
+                $quizzesByName[$quizName] = $quiz;
+            }
+        }
+
+        $data = [];
+        foreach ($quizzesByName as $quiz) {
+            $data[] = [
+                'quiz_id' => $quiz->getQuiz()->getId(),
+                'quiz_name' => $quiz->getQuiz()->getName(),
+                'score' => $quiz->getScore(),
+                'date' => $quiz->getDateOfCreation()->format('Y-m-d H:i:s')
+            ];
+        }
+
+        return new JsonResponse(['quizes' => $data], Response::HTTP_OK);
     }
 }
